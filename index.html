@@ -572,6 +572,9 @@
             border-radius: 8px;
             transition: all 0.3s ease;
             position: relative;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         .mobile-menu-btn:hover {
@@ -581,6 +584,12 @@
         .mobile-menu-btn:active {
             background: rgba(255, 255, 255, 0.2);
             transform: scale(0.95);
+        }
+
+        .mobile-menu-btn:focus {
+            outline: 2px solid #FF6B35;
+            outline-offset: 2px;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .mobile-menu-btn span {
@@ -661,6 +670,9 @@
             opacity: 0;
             transform: translateY(20px);
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         .mobile-menu.active .mobile-nav-link {
@@ -682,6 +694,13 @@
 
         .mobile-nav-link:hover {
             color: #FF6B35;
+        }
+
+        .mobile-nav-link:focus {
+            outline: 2px solid #FF6B35;
+            outline-offset: 2px;
+            color: #FF6B35;
+            background: rgba(255, 107, 53, 0.05);
         }
 
         .mobile-nav-link.active {
@@ -895,7 +914,7 @@
             </div>
 
             <!-- Mobile Menu Button -->
-            <button class="mobile-menu-btn" aria-label="Toggle mobile menu">
+            <button class="mobile-menu-btn" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mobile-navigation-menu">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -903,8 +922,9 @@
         </div>
 
         <!-- Mobile Navigation Menu -->
-        <div class="mobile-menu">
+        <div class="mobile-menu" id="mobile-navigation-menu" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title">
             <div class="mobile-menu-content">
+                <h2 id="mobile-menu-title" style="position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden;">Navigation Menu</h2>
                 <a href="#home" class="mobile-nav-link active">Home</a>
                 <a href="#products" class="mobile-nav-link">Products</a>
                 <a href="#technology" class="mobile-nav-link">Technology</a>
@@ -1073,6 +1093,8 @@
                 mobileMenu.classList.remove('active');
                 document.body.style.overflow = '';
                 document.body.style.position = '';
+                document.body.style.width = '';
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
             } else {
                 // Open menu
                 mobileMenuBtn.classList.add('active');
@@ -1080,6 +1102,7 @@
                 document.body.style.overflow = 'hidden';
                 document.body.style.position = 'fixed';
                 document.body.style.width = '100%';
+                mobileMenuBtn.setAttribute('aria-expanded', 'true');
             }
         });
 
@@ -1092,6 +1115,7 @@
                 document.body.style.overflow = '';
                 document.body.style.position = '';
                 document.body.style.width = '';
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
                 
                 // Smooth scroll to section if it exists
                 const targetId = link.getAttribute('href').substring(1);
@@ -1100,6 +1124,31 @@
                     targetSection.scrollIntoView({ behavior: 'smooth' });
                 }
             });
+        });
+
+        // Close mobile menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+                mobileMenuBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                mobileMenuBtn.focus(); // Return focus to button
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) {
+                mobileMenuBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            }
         });
 
         // Close mobile menu when clicking outside

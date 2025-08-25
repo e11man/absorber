@@ -44,6 +44,28 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
+  // Close mobile menu on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileMenuOpen) {
+        closeMobileMenu();
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -60,11 +82,11 @@ export function Navbar() {
   // Dynamic navbar width classes based on scroll direction
   const getNavbarWidthClasses = () => {
     if (scrollDirection === 'down') {
-      return 'left-12 right-12'; // More compact, professional look
+      return 'left-2 right-2 md:left-12 md:right-12'; // More compact on mobile, professional on desktop
     } else if (scrollDirection === 'up') {
       return 'left-1 right-1'; // More expanded, welcoming look
     }
-    return 'left-4 right-4'; // Default state
+    return 'left-2 right-2 md:left-4 md:right-4'; // Default state - more compact on mobile
   };
 
   return (
@@ -138,21 +160,25 @@ export function Navbar() {
                 'md:hidden relative p-3 rounded-xl transition-all duration-300',
                 'hover:bg-white/10 active:bg-white/20 active:scale-95',
                 'focus:outline-none focus:ring-2 focus:ring-orange-500/50',
-                'min-w-11 min-h-11 flex items-center justify-center'
+                'min-w-12 min-h-12 flex items-center justify-center',
+                'touch-manipulation select-none',
+                isMobileMenuOpen && 'bg-white/10'
               )}
-              aria-label="Toggle mobile menu"
+              aria-label={isMobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
             >
               <div className="relative w-6 h-6">
                 <Menu
                   className={cn(
                     'absolute inset-0 w-6 h-6 text-white transition-all duration-300',
-                    isMobileMenuOpen ? 'opacity-0 rotate-180' : 'opacity-100 rotate-0'
+                    isMobileMenuOpen ? 'opacity-0 rotate-180 scale-75' : 'opacity-100 rotate-0 scale-100'
                   )}
                 />
                 <X
                   className={cn(
                     'absolute inset-0 w-6 h-6 text-white transition-all duration-300',
-                    isMobileMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-180'
+                    isMobileMenuOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-180 scale-75'
                   )}
                 />
               </div>
@@ -163,14 +189,18 @@ export function Navbar() {
 
       {/* Mobile Menu Overlay */}
       <div
+        id="mobile-navigation"
         className={cn(
           'fixed inset-0 z-40 md:hidden transition-all duration-400 ease-out',
           'bg-gray-700/20 backdrop-blur-3xl',
           isMobileMenuOpen
             ? 'opacity-100 visible'
-            : 'opacity-0 invisible'
+            : 'opacity-0 invisible pointer-events-none'
         )}
         onClick={closeMobileMenu}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mobile-menu-title"
       >
         <div
           className={cn(
@@ -182,6 +212,7 @@ export function Navbar() {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-6 pt-24 pb-8">
+            <h2 id="mobile-menu-title" className="sr-only">Navigation Menu</h2>
             <div className="flex flex-col space-y-0">
               {navLinks.map((link, index) => (
                 <a
@@ -191,9 +222,11 @@ export function Navbar() {
                   className={cn(
                     'flex items-center justify-center py-6 text-lg font-montserrat font-medium',
                     'uppercase tracking-wide transition-all duration-300',
-                    'border-b border-white/8 min-h-16',
-                    'opacity-0 translate-y-5',
+                    'border-b border-white/8 min-h-16 relative',
+                    'opacity-0 translate-y-5 touch-manipulation',
                     'hover:text-orange-500 hover:bg-white/5 active:bg-orange-500/10',
+                    'focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:ring-inset',
+                    'focus:text-orange-500 focus:bg-white/5',
                     activeLink === link.href
                       ? 'text-orange-500 bg-orange-500/10'
                       : 'text-gray-200',
@@ -225,7 +258,7 @@ export function Navbar() {
                   variant="primary"
                   size="lg"
                   href="#discover"
-                  className="w-full font-semibold tracking-widest"
+                  className="w-full font-semibold tracking-widest touch-manipulation min-h-12 py-4"
                   onClick={closeMobileMenu}
                 >
                   JOIN THE ELITE
